@@ -28,6 +28,9 @@
             depth: {
                 default: 1
             },
+            color: {
+                default: 0x479ba8 
+            }
         },
         
         methods: {
@@ -37,8 +40,11 @@
             },
             createBox() {
                 const geometry = new THREE.BoxBufferGeometry(this.width, this.height, this.depth)
-                this.material = new THREE.MeshPhongMaterial({color: 0x44aa88})
+                this.material = new THREE.MeshPhongMaterial({color: this.color})
                 this.boxMesh = new THREE.Mesh(geometry, this.material)
+                this.boxMesh.position.x = this.xPos
+                this.boxMesh.position.y = this.yPos
+                this.boxMesh.position.z = this.zPos
                 this.$parent.scene.add(this.boxMesh)
             },
         },

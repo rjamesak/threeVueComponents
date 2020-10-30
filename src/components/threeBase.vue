@@ -1,7 +1,8 @@
 <template>
   <canvas id="c" ref="c">
     <getModel v-if="isMounted" :width="3" :height="4" :depth="2"></getModel>
-    <getModel v-if="isMounted" :width="5" :height="1" :depth="2"></getModel>
+    <getModel v-if="isMounted" :width="5" :height="1" :depth="2" :xPos="4"></getModel>
+    <getModel v-if="isMounted" v-bind="geomParams"></getModel>
     <!-- <div id="guiBlock"></div> -->
   </canvas>
 </template>
@@ -21,6 +22,15 @@ export default {
       then: 0,
       clicked: false,
       isMounted: false,
+      geomParams: {
+        xPos: -3, 
+        yPos: 3, 
+        zPos: -8,
+        width: 3, 
+        height: 1, 
+        depth: 1,
+        color: 0x2f34a1,
+      }
     };
   },
   methods: {
@@ -72,7 +82,7 @@ export default {
       const near = 0.1;
       const far = 100;
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      this.camera.position.set(0, 0, 5);
+      this.camera.position.set(0, 0, 10);
       this.camera.lookAt(0, 0, 0);
     },
     addLight() {
