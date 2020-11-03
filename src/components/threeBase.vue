@@ -1,20 +1,31 @@
 <template>
+<div>
   <canvas id="c" ref="c">
-    <getModel v-if="isMounted" :width="3" :height="4" :depth="2"></getModel>
-    <getModel v-if="isMounted" :width="5" :height="1" :depth="2" :xPos="4"></getModel>
-    <getModel v-if="isMounted" v-bind="geomParams"></getModel>
+    <getModel v-if="isMounted" :width="5" :height="1" :depth="2" :xPos="4" @model-created="addToScene"></getModel>
+    <!-- <getModel v-if="isMounted" v-bind="geomParams"></getModel> -->
+    <getModelCopy v-if="isMounted" @model-created="addToScene" v-bind="geomParams"/>
+    <ground v-if="isMounted"></ground>
     <!-- <div id="guiBlock"></div> -->
   </canvas>
+    <arrowControls @addBox="addBox" @moveUp="moveUp" @moveDown="moveDown" @moveRight="moveRight" @moveLeft="moveLeft"/>
+</div>
 </template>
 
 <script>
+import Vue from 'vue'
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import getModel from './getModel.vue'
+import getModelCopy from './getModel copy.vue'
+import ground from './ground.vue'
+import arrowControls from './arrowControls'
 export default {
   name: "threeBase",
   components: {
     getModel,
+    getModelCopy,
+    ground,
+    arrowControls
   },
   data() {
     return {
@@ -25,12 +36,13 @@ export default {
       geomParams: {
         xPos: -3, 
         yPos: 3, 
-        zPos: -8,
+        zPos: 4,
         width: 3, 
         height: 1, 
         depth: 1,
         color: 0x2f34a1,
-      }
+      },
+      models: []
     };
   },
   methods: {
@@ -42,8 +54,11 @@ export default {
       this.scene.background = new THREE.Color(0xaaaaaa);
       this.addLight();
       this.mouse = new THREE.Vector2();
+      this.yellow = new THREE.Color("yellow")
+      this.savedColor = new THREE.Color()
       this.initControls();
       this.initEventListeners();
+      this.initRaycaster();
 
       this.render();
       // requestAnimationFrame(this.render);
@@ -60,6 +75,31 @@ export default {
         this.camera.aspect = canvas.clientWidth / canvas.clientHeight;
         this.camera.updateProjectionMatrix();
       }
+      
+      this.raycast()
+
+      //something picked last frame
+      if (this.picked) {
+        this.picked = null
+      }
+
+      //something picked now
+      if (this.intersects.length) {
+        if (this.clicked) {
+          this.clicked = false;
+          this.picked = this.intersects[0].object;
+          if(this.chosen) {
+            //return last chosen object to old color
+            this.chosen.material.color = this.savedColor;
+          }
+          this.chosen = this.picked; // chosen for manip
+          this.savedColor = this.chosen.material.color;
+          console.log(this.picked)
+          this.picked.material.color = this.yellow;
+        }
+      }
+
+      this.clicked = false;
 
       this.renderer.render(this.scene, this.camera);
       requestAnimationFrame(this.render); //passing it the render function
@@ -82,7 +122,8 @@ export default {
       const near = 0.1;
       const far = 100;
       this.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      this.camera.position.set(0, 0, 10);
+      this.camera.position.set(0, -10, 4);
+      this.camera.up.set(0,0,1)
       this.camera.lookAt(0, 0, 0);
     },
     addLight() {
@@ -94,6 +135,12 @@ export default {
       this.scene.add(light);
       this.scene.add(ambLight);
     },
+    raycast() {
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      this.intersects = this.raycaster.intersectObjects(
+        this.scene.children, true
+      )
+    },
     
     initEventListeners() {
       this.$refs.c.addEventListener("mousemove", this.onMouseMove, false);
@@ -104,6 +151,10 @@ export default {
     },
     initControls() {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    },
+    initRaycaster() {
+      this.raycaster = new THREE.Raycaster();
+      this.picked = null;
     },
     onMouseMove() {
       this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -121,6 +172,31 @@ export default {
       this.clicked = true;
       console.log("click!");
     },
+    moveUp() {
+      this.geomParams.zPos++;
+      // this.models[0].position.z++
+      this.chosen.position.z++;
+    },
+    moveDown() {
+      this.chosen.position.z--;
+    },
+    moveLeft() {
+      this.chosen.position.x--;
+    },
+    moveRight() {
+      this.chosen.position.x++;
+    },
+    addBox() {
+      const ModelClass = Vue.extend(getModel)
+      this.newBox = new ModelClass()
+      this.newBox.$mount()
+      this.$refs.c.appendChild(this.newBox.$el)
+    },
+    addToScene(mesh) {
+      this.scene.add(mesh)
+      this.models.push(mesh)
+    },
+    
     
   },
   mounted() {
@@ -135,5 +211,6 @@ export default {
   height: 100vh;
   display: block;
   overflow: hidden;
+  position: relative;
 }
 </style>

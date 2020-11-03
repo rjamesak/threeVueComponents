@@ -8,7 +8,7 @@
     import * as THREE from "three";
 
     export default {
-        name: "getModel",
+        name: "getModelCopy",
         props: {
             xPos: {
                 default: 1
@@ -45,7 +45,7 @@
                 this.boxMesh.position.x = this.xPos
                 this.boxMesh.position.y = this.yPos
                 this.boxMesh.position.z = this.zPos
-                this.$parent.scene.add(this.boxMesh)
+                this.$emit('model-created', this.boxMesh)
             },
         },
         mounted() {
