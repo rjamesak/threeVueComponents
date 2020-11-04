@@ -7,7 +7,12 @@
     <ground v-if="isMounted"></ground>
     <!-- <div id="guiBlock"></div> -->
   </canvas>
-    <arrowControls @addBox="addBox" @moveUp="moveUp" @moveDown="moveDown" @moveRight="moveRight" @moveLeft="moveLeft"/>
+    <arrowControls @addBox="addBox" @moveUp="moveUp" @moveDown="moveDown" 
+    @moveRight="moveRight" @moveLeft="moveLeft"
+    @moveFront="moveFront"
+    @moveBack ="moveBack"
+    @changeColor="changeColor"/>
+    <mesh-maker @model-created="addToScene"/>
 </div>
 </template>
 
@@ -19,13 +24,15 @@ import getModel from './getModel.vue'
 import getModelCopy from './getModel copy.vue'
 import ground from './ground.vue'
 import arrowControls from './arrowControls'
+import meshMaker from './meshMaker.vue'
 export default {
   name: "threeBase",
   components: {
     getModel,
     getModelCopy,
     ground,
-    arrowControls
+    arrowControls,
+    meshMaker
   },
   data() {
     return {
@@ -56,6 +63,7 @@ export default {
       this.mouse = new THREE.Vector2();
       this.yellow = new THREE.Color("yellow")
       this.savedColor = new THREE.Color()
+      this.newColor = new THREE.Color()
       this.initControls();
       this.initEventListeners();
       this.initRaycaster();
@@ -185,6 +193,20 @@ export default {
     },
     moveRight() {
       this.chosen.position.x++;
+    },
+    moveFront() {
+      this.chosen.position.y--;
+    },
+    moveBack() {
+      this.chosen.position.y++;
+    },
+    changeColor(color) {
+      //receiving color as "#FFFFFF" hex color
+      //how to make a real three color?
+      console.log('color: ', color)
+      console.log('newColor: ', this.newColor)
+      // this.chosen.material.color = this.savedColor
+      // this.chosen.material.color = color;
     },
     addBox() {
       const ModelClass = Vue.extend(getModel)

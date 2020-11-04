@@ -1,10 +1,12 @@
 <template>
     <div class="grid">
-        <button class="up" @click="moveUp">UP</button>
+        <button class="up" @click="$emit('moveUp')">UP</button>
         <button class="down" @click="$emit('moveDown')">DOWN</button>
         <button class="left" @click="$emit('moveLeft')">LEFT</button>
         <button class="right" @click="$emit('moveRight')">RIGHT</button>
-        <button class="add" @click="$emit('addBox')">ADD BOX</button>
+        <button class="front" @click="$emit('moveFront')">FRONT</button>
+        <button class="back" @click="$emit('moveBack')">BACK</button>
+        <input type="color"  @input="changeColor($event.target.value)"/>
     </div>
 </template>
 
@@ -12,10 +14,11 @@
     export default {
         name: "arrowControls",
         methods: {
-            moveUp() {
-                this.$emit('moveUp')
+            changeColor(color) {
+                this.$emit('changeColor', color)
             }
         },
+        
     }
 </script>
 
@@ -40,6 +43,10 @@
 }
 .right {
     grid-column-start: 3;
+}
+.back {
+    grid-column-start: 3;
+    grid-row-start: 1;
 }
 
 </style>
