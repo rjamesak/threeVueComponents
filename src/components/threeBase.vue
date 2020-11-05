@@ -20,6 +20,7 @@
 import Vue from 'vue'
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import getModel from './getModel.vue'
 import getModelCopy from './getModel copy.vue'
 import ground from './ground.vue'
@@ -58,6 +59,8 @@ export default {
       this.renderer = new THREE.WebGLRenderer({ canvas });
       this.createCamera();
       this.scene = new THREE.Scene();
+      window.scene = this.scene; //for three.js inspector extension
+      window.THREE = THREE       //for three.js inspector
       this.scene.background = new THREE.Color(0xaaaaaa);
       this.addLight();
       this.mouse = new THREE.Vector2();
@@ -65,11 +68,11 @@ export default {
       this.savedColor = new THREE.Color()
       this.newColor = new THREE.Color()
       this.initControls();
+      this.initTransformControls();
       this.initEventListeners();
       this.initRaycaster();
 
       this.render();
-      // requestAnimationFrame(this.render);
       this.isMounted = true;
     },
     render(now) {
@@ -84,27 +87,38 @@ export default {
         this.camera.updateProjectionMatrix();
       }
       
-      this.raycast()
 
       //something picked last frame
       if (this.picked) {
         this.picked = null
+        this.intersects = null
       }
 
+      this.raycast()
       //something picked now
-      if (this.intersects.length) {
+      if (this.intersects.length > 0) {
+        // for (let objects of this.intersects) {
+          // console.log(objects.type)
+        // }
+        this.picked = this.intersects[0].object;
+        console.log('picked')
         if (this.clicked) {
           this.clicked = false;
-          this.picked = this.intersects[0].object;
+          //if object clicked last frame
           if(this.chosen) {
             //return last chosen object to old color
             this.chosen.material.color = this.savedColor;
+            this.tControls.detach()
           }
           this.chosen = this.picked; // chosen for manip
           this.savedColor = this.chosen.material.color;
           console.log(this.picked)
-          this.picked.material.color = this.yellow;
+          this.picked.material.color = this.yellow
+          // //transform controls
+          this.tControls.attach(this.picked)
+          // this.scene.add(this.tControls)
         }
+
       }
 
       this.clicked = false;
@@ -146,7 +160,7 @@ export default {
     raycast() {
       this.raycaster.setFromCamera(this.mouse, this.camera);
       this.intersects = this.raycaster.intersectObjects(
-        this.scene.children, true
+        this.models, true
       )
     },
     
@@ -159,6 +173,16 @@ export default {
     },
     initControls() {
       this.controls = new OrbitControls(this.camera, this.renderer.domElement)
+    },
+    initTransformControls() {
+      this.tControls = new TransformControls(this.camera, this.renderer.domElement)
+      this.scene.add(this.tControls)
+      // this.tControls.addEventListener("change", this.render)
+      this.tControls.addEventListener("mouseDown", () => {
+        this.controls.enabled = false
+        console.log('tControl Mousedown event')
+      })
+      this.tControls.addEventListener("mouseUp", () => this.controls.enabled = true)
     },
     initRaycaster() {
       this.raycaster = new THREE.Raycaster();
@@ -203,9 +227,10 @@ export default {
     changeColor(color) {
       //receiving color as "#FFFFFF" hex color
       //how to make a real three color?
-      console.log('color: ', color)
-      console.log('newColor: ', this.newColor)
-      // this.chosen.material.color = this.savedColor
+      console.log('color: ', color.replace("#", "0x"))
+      const formattedColor = color.replace("#", "0x")
+      this.savedColor.setHex(formattedColor)
+      // this.chosen.material.color.setHex(formattedColor)
       // this.chosen.material.color = color;
     },
     addBox() {
