@@ -6,6 +6,9 @@
         <button class="right" @click="$emit('moveRight')">RIGHT</button>
         <button class="front" @click="$emit('moveFront')">FRONT</button>
         <button class="back" @click="$emit('moveBack')">BACK</button>
+        <button class="scale" @click="$emit('scale')">SCALE OBJECT</button>
+        <button class="rotate" @click="$emit('rotate')">ROTATE OBJECT</button>
+        <button class="translate" @click="$emit('translate')">TRANSLATE OBJECT</button>
         <input type="color"  @input="changeColor($event.target.value)"/>
     </div>
 </template>
@@ -47,6 +50,9 @@
 .back {
     grid-column-start: 3;
     grid-row-start: 1;
+}
+.scale, .rotate, .translate {
+    grid-row-start: 4;
 }
 
 </style>

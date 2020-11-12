@@ -11,7 +11,10 @@
     @moveRight="moveRight" @moveLeft="moveLeft"
     @moveFront="moveFront"
     @moveBack ="moveBack"
-    @changeColor="changeColor"/>
+    @changeColor="changeColor"
+    @scale="scale"
+    @rotate="rotate"
+    @translate="translate"/>
     <mesh-maker @model-created="addToScene"/>
 </div>
 </template>
@@ -223,6 +226,15 @@ export default {
     },
     moveBack() {
       this.chosen.position.y++;
+    },
+    scale() {
+      this.tControls.setMode('scale')
+    },
+    rotate() {
+      this.tControls.setMode('rotate')
+    },
+    translate() {
+      this.tControls.setMode('translate')
     },
     changeColor(color) {
       //receiving color as "#FFFFFF" hex color
