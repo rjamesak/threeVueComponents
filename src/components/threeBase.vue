@@ -1,21 +1,26 @@
 <template>
 <div>
-  <canvas id="c" ref="c">
-    <getModel v-if="isMounted" :width="5" :height="1" :depth="2" :xPos="4" @model-created="addToScene"></getModel>
-    <!-- <getModel v-if="isMounted" v-bind="geomParams"></getModel> -->
-    <getModelCopy v-if="isMounted" @model-created="addToScene" v-bind="geomParams"/>
-    <ground v-if="isMounted"></ground>
-    <!-- <div id="guiBlock"></div> -->
-  </canvas>
-    <arrowControls @addBox="addBox" @moveUp="moveUp" @moveDown="moveDown" 
-    @moveRight="moveRight" @moveLeft="moveLeft"
-    @moveFront="moveFront"
-    @moveBack ="moveBack"
-    @changeColor="changeColor"
-    @scale="scale"
-    @rotate="rotate"
-    @translate="translate"/>
-    <mesh-maker @model-created="addToScene"/>
+
+
+    <canvas id="c" ref="c">
+      <getModel v-if="isMounted" :width="5" :height="1" :depth="2" :xPos="4" @model-created="addToScene"></getModel>
+      <!-- <getModel v-if="isMounted" v-bind="geomParams"></getModel> -->
+      <getModelCopy v-if="isMounted" @model-created="addToScene" v-bind="geomParams"/>
+      <ground v-if="isMounted"></ground>
+      <!-- <div id="guiBlock"></div> -->
+    </canvas>
+      <arrowControls class="guiControls" @addBox="addBox" @moveUp="moveUp" @moveDown="moveDown" 
+      @moveRight="moveRight" @moveLeft="moveLeft"
+      @moveFront="moveFront"
+      @moveBack ="moveBack"
+      @changeColor="changeColor"
+      @scale="scale"
+      @rotate="rotate"
+      @translate="translate">
+      <mesh-maker @model-created="addToScene"/>
+      </arrowControls>
+      
+
 </div>
 </template>
 
@@ -36,7 +41,7 @@ export default {
     getModelCopy,
     ground,
     arrowControls,
-    meshMaker
+    meshMaker,
   },
   data() {
     return {
@@ -91,6 +96,8 @@ export default {
       }
       
 
+      this.controls.update();
+
       //something picked last frame
       if (this.picked) {
         this.picked = null
@@ -112,14 +119,32 @@ export default {
             //return last chosen object to old color
             this.chosen.material.color = this.savedColor;
             this.tControls.detach()
+            // remove chosen if selected again
+            if(this.chosen.id === this.picked.id) {
+              this.chosen = null
+              }
+            // if picked !== chosen, then choose
+            else if(this.chosen.id !== this.picked.id) {
+              this.choose()
+            }
           }
-          this.chosen = this.picked; // chosen for manip
-          this.savedColor = this.chosen.material.color;
-          console.log(this.picked)
-          this.picked.material.color = this.yellow
-          // //transform controls
-          this.tControls.attach(this.picked)
-          // this.scene.add(this.tControls)
+          else {
+            this.choose()
+          }
+          
+          // account for clicking already chosen object
+          // if picked === chosen, do nothing
+          // if first pick (!chosen), then choose
+
+          
+
+          // this.chosen = this.picked; // chosen for manip
+          // this.savedColor = this.chosen.material.color;
+          // console.log(this.picked)
+          // this.picked.material.color = this.yellow
+          // // //transform controls
+          // this.tControls.attach(this.picked)
+
         }
 
       }
@@ -166,6 +191,14 @@ export default {
         this.models, true
       )
     },
+    choose() {
+            this.chosen = this.picked; // chosen for manip
+            this.savedColor = this.chosen.material.color;
+            console.log(this.picked)
+            this.picked.material.color = this.yellow
+            // //transform controls
+            this.tControls.attach(this.picked)
+    },
     
     initEventListeners() {
       this.$refs.c.addEventListener("mousemove", this.onMouseMove, false);
@@ -210,22 +243,34 @@ export default {
     moveUp() {
       this.geomParams.zPos++;
       // this.models[0].position.z++
-      this.chosen.position.z++;
+      if(this.chosen) {
+        this.chosen.position.z++;
+      }
     },
     moveDown() {
-      this.chosen.position.z--;
+      if(this.chosen) {
+        this.chosen.position.z--;
+      }
     },
     moveLeft() {
-      this.chosen.position.x--;
+      if(this.chosen) {
+        this.chosen.position.x--;
+      }
     },
     moveRight() {
-      this.chosen.position.x++;
+      if(this.chosen) {
+        this.chosen.position.x++;
+      }
     },
     moveFront() {
-      this.chosen.position.y--;
+      if(this.chosen) {
+        this.chosen.position.y--;
+      }
     },
     moveBack() {
-      this.chosen.position.y++;
+      if(this.chosen) {
+        this.chosen.position.y++;
+      }
     },
     scale() {
       this.tControls.setMode('scale')
@@ -265,10 +310,15 @@ export default {
 </script>
 
 <style lang="css" scoped>
+.grid {
+  display: grid;
+  grid-template-columns: auto auto;
+
+}
+
 #c {
   width: 100vw;
   height: 100vh;
-  display: block;
   overflow: hidden;
   position: relative;
 }

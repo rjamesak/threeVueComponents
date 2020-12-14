@@ -53,10 +53,10 @@ import * as THREE from "three";
 </script>
 
 <style lang="css" scoped>
-.addButton {
+/* .addButton {
     position: absolute;
-    top: 10em;
+    top: 20vw;
     right: 1em;
-}
+} */
 
 </style>
